@@ -1,0 +1,50 @@
+.header {
+  background: #2f4fb9;
+  height: 72px;
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo {
+  width: 32px;
+  height: 32px;
+}
+
+.brandText {
+  font-weight: 700;
+  font-size: 18px;
+  color: #0b1020;
+  letter-spacing: 0.5px;
+}
+
+.nav {
+  display: flex;
+  gap: 40px;
+}
+
+.link {
+  color: #0b1020;
+  text-decoration: none;
+  font-weight: 500;
+  opacity: 0.9;
+}
+
+.link:hover {
+  opacity: 1;
+  text-decoration: underline;
+}
