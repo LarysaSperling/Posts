@@ -5,9 +5,8 @@ export default function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.container}>
-        <div className={styles.brand}>
-          <img className={styles.logo} src={logo} alt="logo" />
-          <span className={styles.brandText}>MECK</span>
+        <div className={styles.logoBlock}>
+          <img src={logo} alt="Logo" className={styles.logo} />
         </div>
 
         <nav className={styles.nav}>
