@@ -12,71 +12,105 @@ export default function App() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  
+ 
+  const [hasMore, setHasMore] = useState(true);
+  const [info, setInfo] = useState(""); 
+
+
   const sortKey = (p) => {
     if (p?.createdAt) return new Date(p.createdAt).getTime();
     if (p?.date) return Number(p.date);
     return Number(p?.id ?? 0);
   };
 
-  const loadPosts = useCallback(
-    async (p = page) => {
-      setLoading(true);
-      try {
-        const res = await postsApi.getAll(p, LIMIT);
+  const loadPosts = useCallback(async (p = 1) => {
+    setLoading(true);
+    setInfo("");
+    try {
+      const res = await postsApi.getAll(p, LIMIT);
+      const data = Array.isArray(res.data) ? res.data : [];
 
-        const sorted = [...(res?.data ?? [])].sort(
-          (a, b) => sortKey(b) - sortKey(a)
-        );
+   
+      const sorted = [...data].sort((a, b) => sortKey(b) - sortKey(a));
 
-        setPosts(sorted);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [LIMIT, page]
-  );
+      setPosts(sorted);
 
+      
+      setHasMore(data.length === LIMIT);
 
+      return data;
+    } finally {
+      setLoading(false);
+    }
+  }, [LIMIT]);
+
+  
   useEffect(() => {
+    setPage(1);
     loadPosts(1);
   }, [loadPosts]);
 
   
   const handleCreated = (createdPost) => {
     setPage(1);
+    setInfo("");
 
     setPosts((prev) => {
       const merged = [createdPost, ...prev];
-
       const uniq = Array.from(new Map(merged.map((p) => [p.id, p])).values());
-
-      
       uniq.sort((a, b) => sortKey(b) - sortKey(a));
-
       return uniq.slice(0, LIMIT);
     });
+
+    
+    setHasMore(true);
   };
 
-  const handleDelete = useCallback(
-    async (id) => {
-      await postsApi.remove(id);
-      await loadPosts(page);
-    },
-    [loadPosts, page]
-  );
+ 
+  const handleDelete = async (id) => {
+    await postsApi.remove(id);
 
-  const handleNext = useCallback(async () => {
+    
+    const data = await loadPosts(page);
+    if (page > 1 && data.length === 0) {
+      const prev = page - 1;
+      setPage(prev);
+      await loadPosts(prev);
+    }
+  };
+
+  const handleNext = async () => {
+    if (!hasMore || loading) return;
+
     const next = page + 1;
-    setPage(next);
-    await loadPosts(next);
-  }, [loadPosts, page]);
+    setLoading(true);
+    setInfo("");
+    try {
+      const res = await postsApi.getAll(next, LIMIT);
+      const data = Array.isArray(res.data) ? res.data : [];
 
-  const handlePrev = useCallback(async () => {
+      if (data.length === 0) {
+     
+        setHasMore(false);
+        setInfo("Постов больше нет");
+        return;
+      }
+
+      const sorted = [...data].sort((a, b) => sortKey(b) - sortKey(a));
+      setPosts(sorted);
+      setPage(next);
+      setHasMore(data.length === LIMIT);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handlePrev = async () => {
+    if (loading) return;
     const prev = Math.max(1, page - 1);
     setPage(prev);
     await loadPosts(prev);
-  }, [loadPosts, page]);
+  };
 
   return (
     <div className={styles.app}>
@@ -88,6 +122,8 @@ export default function App() {
             posts={posts}
             loading={loading}
             page={page}
+            hasMore={hasMore}
+            info={info}
             onDelete={handleDelete}
             onNext={handleNext}
             onPrev={handlePrev}

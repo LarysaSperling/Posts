@@ -4,14 +4,20 @@ import styles from "./styles.module.css";
 import avatar from "../../assets/avatar.svg";
 
 export default function PostForm({ onCreated }) {
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm({
-    defaultValues: { title: "", content: "" },
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { isSubmitting, errors },
+  } = useForm({
+    defaultValues: { title: "", text: "" },
   });
 
   const onSubmit = async (data) => {
     const res = await postsApi.create({
       title: data.title.trim(),
-      content: data.content.trim(),
+      
+      text: data.text.trim(),
       createdAt: new Date().toISOString(),
     });
 
@@ -20,14 +26,16 @@ export default function PostForm({ onCreated }) {
   };
 
   return (
-    <div className={styles.wrapper}>
+    <section className={styles.wrapper}>
       <h2 className={styles.title}>Написать пост</h2>
 
       <div className={styles.formWrap}>
-        <img className={styles.avatar} src={avatar} alt="avatar" />
+        <img src={avatar} className={styles.avatar} alt="User avatar" />
 
         <form className={styles.form} onSubmit={handleSubmit(onSubmit)}>
-          <label htmlFor="title" className={styles.label}>Заголовок</label>
+          <label className={styles.label} htmlFor="title">
+            Заголовок
+          </label>
           <input
             id="title"
             className={styles.input}
@@ -36,20 +44,22 @@ export default function PostForm({ onCreated }) {
           />
           {errors.title && <p className={styles.error}>{errors.title.message}</p>}
 
-          <label htmlFor="content" className={styles.label}>Текст поста</label>
+          <label className={styles.label} htmlFor="text">
+            Текст поста
+          </label>
           <textarea
-            id="content"
+            id="text"
             className={styles.textarea}
             placeholder="Введите текст..."
-            {...register("content", { required: "Введите текст поста" })}
+            {...register("text", { required: "Введите текст поста" })}
           />
-          {errors.content && <p className={styles.error}>{errors.content.message}</p>}
+          {errors.text && <p className={styles.error}>{errors.text.message}</p>}
 
-          <button className={styles.button} type="submit" disabled={isSubmitting}>
+          <button className={styles.button} disabled={isSubmitting} type="submit">
             Публикация
           </button>
         </form>
       </div>
-    </div>
+    </section>
   );
 }
